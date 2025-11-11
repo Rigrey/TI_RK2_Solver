@@ -120,24 +120,25 @@ async def show_task2_menu(chat_id):
     '🎯 Эйлер (Задание 1)', '🔤 Левенштейн (Задание 1)',
     '🎯 Эйлер (Задание 2)', '🔤 Левенштейн (Задание 2)'
 ])
-def handle_specific_task(message):
+
+async def handle_specific_task(message):
     chat_id = message.chat.id
     task_text = message.text
 
     if 'Эйлер' in task_text and 'Задание 1' in task_text:
-        bot.send_message(chat_id, "Введите данные для задачи Эйлера (Задание 1):")
+        await bot.send_message(chat_id, "Введите данные для шифрования кодом Эйлера (Задание 1):")
         user_states[chat_id]['waiting_for'] = 'euler_1'
 
     elif 'Левенштейн' in task_text and 'Задание 1' in task_text:
-        bot.send_message(chat_id, "Введите две строки для сравнения (через запятую):")
+        await bot.send_message(chat_id, "Введите данные для шифрования кодом Левенштейна (Задание 1):")
         user_states[chat_id]['waiting_for'] = 'levenshtein_1'
 
     elif 'Эйлер' in task_text and 'Задание 2' in task_text:
-        bot.send_message(chat_id, "Введите данные для задачи Эйлера (Задание 2):")
+        await bot.send_message(chat_id, "Введите данные для дешифровки кода Эйлера (Задание 2):")
         user_states[chat_id]['waiting_for'] = 'euler_2'
 
     elif 'Левенштейн' in task_text and 'Задание 2' in task_text:
-        bot.send_message(chat_id, "Введите две строки для продвинутого сравнения (через запятую):")
+        await bot.send_message(chat_id, "Введите данные для дешифровки кода Левенштейна(Задание 2):")
         user_states[chat_id]['waiting_for'] = 'levenshtein_2'
 
 
@@ -162,7 +163,8 @@ async def handle_task_input(message):
     user_state = user_states[chat_id]
     waiting_for = user_state['waiting_for']
     input_data = message.text
-
+    if not waiting_for:
+        return
     try:
         if waiting_for == 'euler_1':
             result = euler_task(input_data)
@@ -200,8 +202,14 @@ async def handle_task_input(message):
     except Exception as e:
         await bot.send_message(chat_id, f"❌ Произошла ошибка: {str(e)}")
 
+# Обработчик для любых других сообщений
+@bot.message_handler(func=lambda message: True)
+async def handle_other_messages(message):
+    await bot.send_message(message.chat.id, "Используйте кнопки для навигации или /start для начала")
 
-# Запуск бота
+async def main():
+    print("Асинхронный бот запущен...")
+    await bot.polling()
+
 if __name__ == '__main__':
-    print("Бот запущен...")
-    bot.polling()
+    asyncio.run(main())
